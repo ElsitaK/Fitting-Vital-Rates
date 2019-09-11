@@ -150,7 +150,7 @@ legend("bottomleft", c("Summer 1","Summer 2","Winter"),
        pch=c(NA,NA,NA), col=c("green","blue","red"), lty=c(1,1,1), merge=TRUE, cex=0.7)
 ```
 
-![](AllVitalRateFits.8.30.19.ForAllison_files/figure-markdown_github/unscaled.Egg-1.png)
+![](README_figs/figure-markdown_github/unscaled.Egg-1.png)
 
 Effects of Increased Temperatures on Larval Survival
 ====================================================
@@ -288,7 +288,7 @@ legend("topright", c("Summer 1","Summer 2","Winter"),
        pch=c(NA,NA,NA), col=c("green","blue","red"), lty=c(1,1,1), merge=TRUE, cex=0.7)
 ```
 
-![](AllVitalRateFits.8.30.19.ForAllison_files/figure-markdown_github/unscaled.Larv-1.png)
+![](README_figs/figure-markdown_github/unscaled.Larv-1.png)
 
 Effects of Increased Temperatures on Fecundity
 ==============================================
@@ -354,4 +354,4 @@ plot(Eggs.Scale ~ AVEmaxTemp, data=data, xlab=expression(paste("Average of Daily
 lines(y~p, type="l", lty=1) #quadratic
 ```
 
-![](AllVitalRateFits.8.30.19.ForAllison_files/figure-markdown_github/quad.max-1.png)
+![](README_figs/figure-markdown_github/quad.max-1.png)
