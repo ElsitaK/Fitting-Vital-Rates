@@ -8,7 +8,7 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 require(knitr)
-opts_knit$set(root.dir = '~/Documents/NCSU/SERDP/Warming/Brian Analysis/SEED 2.0/SEED 3.0/FOR ALLISON 8.30.19')
+opts_knit$set(root.dir = 'setwd('~/Fitting-Vital-Rates')')
 knitr::opts_chunk$set(echo = TRUE, error = TRUE) # allows code to knit even if it has errors
 library(lme4)
 library(MuMIn)
