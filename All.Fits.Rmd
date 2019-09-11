@@ -1,0 +1,194 @@
+---
+title: "Effects of generation and increased temperature on Appalachian Brown Egg Survival, Larval Survival and Fecundity"
+subtitle: FITS FOR SEED MODEL
+author: "Elsita Kiekebusch"
+date: "8/30/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+require(knitr)
+opts_knit$set(root.dir = 'setwd('~/Fitting-Vital-Rates')')
+knitr::opts_chunk$set(echo = TRUE, error = TRUE) # allows code to knit even if it has errors
+library(lme4)
+library(MuMIn)
+library(plyr)
+library(dplyr)
+```
+
+This is an abbreviated document that displays the vital rate fits ONLY for Appalachian Brown egg survival, larval survival and fecundity. 
+
+For egg and larval survival, "Maximum Temperature + Flight Period" (Generation) was determined by AICc ranking to be the best model. I show the overall model fits (eg summary(model)) and then demonstrate how I extracted each generational model fit (summer 1, summer 2, winter).
+
+For fecundity, "Maximum Temperature Squared" was determined by AICc ranking to be the best model fit for number of Eggs Laid PER DAY. To proceed with (any) population model, total fecundity can be estimated by multiplying the daily fecundity (from model fit) with the average adult lifespan estimated from mark recapture (Lifespan = 1/ (1-daily adult survival) = 1/ 1-0.91 = 11.1). I capped the total number of eggs laid at 116.914/2 = 58.457 (half of total possible eggs found by Sivakoff et al 2016). Fecundity warming experiments and mark recapture were carried out during a single time period, therefore IT MUST BE ASSUMED THAT FECUNDITY AND ADULT LIFESPAN WERE CONSTANT DURING ALL GENERATIONS.
+
+
+# Effects of Increased Temperatures on Egg Survival
+
+## Getting the Data
+```{r EGG.FP}
+#read in the data
+Data1=read.csv("Warming.Field.FP4.5.Eggs.Results.1.8.18.csv")
+Data2=read.csv("Warming.Field.FP2.3.Eggs.Results.1.8.18.csv")
+Data3=read.csv("Warming.Field.FP3.1.Eggs.Results.1.8.18.csv")
+
+Data1$FP <- "A" #summer 1 generation
+Data2$FP <- "B" #summer 2 generation
+Data3$FP <- "C" #winter generation
+
+Data4 <- rbind(Data1, Data2)
+Data <-rbind(Data4,Data3)
+
+#change data into egg counts from 1 day survival
+Data$dailySurvival <- sqrt(Data$TwoDaySurvival)
+Data$Eggs.OutA <- round(Data$dailySurvival*Data$Eggs.In)
+
+#add Dam Restoration treatment
+Metadata=read.csv("Restoration.DAM.Treatments.csv")
+Data <- merge(Data,Metadata,by=c("Site","Plot"))
+#str(Data)
+
+#create survival variable
+survariable <- cbind(Data$Eggs.OutA, Data$Eggs.In-Data$Eggs.OutA)
+
+```
+
+## EGG SURVIVAL - Highest Ranked Model
+```{r unscaled.Egg}
+#model converges without scaling
+maxTemp.mod = glmer(formula = survariable ~ AVEmaxTemp + FP + (1 | Site/Plot), data = Data, family = binomial(logit))
+summary(maxTemp.mod)
+
+#get coefficients
+#not sure what to do with multiple random effect values
+betas.Egg <- coef(maxTemp.mod) 
+betas.Egg
+
+fixef.Egg<- fixef(maxTemp.mod)
+fixef.Egg
+
+#save coefficients
+b0 <- fixef.Egg[1]
+X1 <- fixef.Egg[2]
+summer2 <- fixef.Egg[3]
+winter <- fixef.Egg[4]
+
+#x axis range
+X.range <- seq(from=min(Data$AVEmaxTemp), to=max(Data$AVEmaxTemp), by=.01)
+
+#formula set up
+s1.logits <- b0 + (X1*X.range) 
+s2.logits <- b0 + (X1*X.range) + summer2
+w.logits <-  b0 + (X1*X.range) + winter
+
+#apply logit function
+summer1 <- exp(s1.logits)/(1 + exp(s1.logits))
+summer2 <- exp(s2.logits)/(1 + exp(s2.logits))
+winter <- exp(w.logits)/(1 + exp(w.logits))
+
+#PLOT
+Data$FP <- factor(Data$FP) #set as factor to color points separately
+plot(dailySurvival ~ AVEmaxTemp, data=Data, ylim = c(0.5,1), ylab="Egg Daily Survival", xlab=expression(paste("Average of Daily Maximum Temperatures (" * degree, "C)")), pch=21, bg = c("green", "blue", "red")[unclass(Data$FP)])
+lines(summer1~X.range, type="l", lty=1, col="green") #summer 1
+lines(summer2~X.range, type="l", lty=1, col="blue") #summer 2
+lines(winter~X.range, type="l", lty=1, col="red") #winter
+legend("bottomleft", c("Summer 1","Summer 2","Winter"),
+       pch=c(NA,NA,NA), col=c("green","blue","red"), lty=c(1,1,1), merge=TRUE, cex=0.7)
+```
+
+# Effects of Increased Temperatures on Larval Survival
+
+## Getting the Data
+```{r LARVA.FP}
+#read in the data
+Data1=read.csv("Warming.Field.FP4.5.Larvae.Results.1.8.18.csv")
+Data2=read.csv("Warming.Field.FP2.3.Larvae.Results.1.8.18.csv")
+Data3=read.csv("Warming.Field.FP3.1.Larvae.Results.1.8.18.csv")
+
+Data1$FP <- "A"
+Data2$FP <- "B"
+Data3$FP <- "C"
+
+Data4 <- rbind(Data1, Data2)
+Data <-rbind(Data4,Data3)
+
+#add Dam Restoration treatment
+Metadata=read.csv("Restoration.DAM.Treatments.csv")
+Data <- merge(Data,Metadata,by=c("Site","Plot"))
+#str(Data)
+
+#create survival variable
+survariable <- cbind(Data$Larvae.Out, Data$Larvae.In-Data$Larvae.Out)
+
+```
+
+## LARVAL SURVIVAL - Highest Ranked Model
+```{r unscaled.Larv}
+#model converges without scaling
+maxTemp.mod2 = glmer(formula = survariable ~ AVEmaxTemp + FP + (1 | Site/Plot), data = Data, family = binomial(logit))
+summary(maxTemp.mod2)
+
+#get coefficients
+betas.Larv <- coef(maxTemp.mod2) #not sure what to do with multiple random effect values
+betas.Larv
+
+fixef.Larv<- fixef(maxTemp.mod2)
+fixef.Larv
+
+#save coefficients
+b0 <- fixef.Larv[1]
+X1 <- fixef.Larv[2]
+summer2 <- fixef.Larv[3]
+winter <- fixef.Larv[4]
+
+#x axis range
+X.range <- seq(from=min(Data$AVEmaxTemp), to=max(Data$AVEmaxTemp), by=.01)
+
+#formula set up
+s1.logits <- b0 + (X1*X.range) 
+s2.logits <- b0 + (X1*X.range) + summer2
+w.logits <-  b0 + (X1*X.range) + winter
+
+#apply logit function
+summer1 <- exp(s1.logits)/(1 + exp(s1.logits))
+summer2 <- exp(s2.logits)/(1 + exp(s2.logits))
+winter <- exp(w.logits)/(1 + exp(w.logits))
+
+#PLOT
+Data$FP <- factor(Data$FP) #set as factor to color points separately
+plot(perEmerged ~ AVEmaxTemp, data=Data, ylim = c(0,1), ylab="Larval Survival", xlab=expression(paste("Average of Daily Maximum Temperatures (" * degree, "C)")), pch=21, bg = c("green", "blue", "red")[unclass(Data$FP)])
+lines(summer1~X.range, type="l", lty=1, col="green") #summer 1
+lines(summer2~X.range, type="l", lty=1, col="blue") #summer 2
+lines(winter~X.range, type="l", lty=1, col="red") #winter
+legend("topright", c("Summer 1","Summer 2","Winter"),
+       pch=c(NA,NA,NA), col=c("green","blue","red"), lty=c(1,1,1), merge=TRUE, cex=0.7)
+```
+
+# Effects of Increased Temperatures on Fecundity
+
+## Getting Data
+```{r fecundity}
+data <- read.csv('Fecundity_iButtonData_Results.24HR_Scaled.csv',stringsAsFactors=FALSE)
+#str(data)
+```
+
+## FECUNDITY - Highest Ranked Model
+```{r quad.max}
+maxTemp.sq.mod <- glm(Eggs.Scale ~ AVEmaxTemp + I(AVEmaxTemp^2), family=quasipoisson, data=data)
+summary(maxTemp.sq.mod)
+
+#get model coefficients
+betas <- coef(maxTemp.sq.mod)
+betas
+
+b0 <- betas[1]
+b1 <- betas[2]
+b2 <- betas[3]
+
+p <- seq(24,38,0.25)
+y <- exp(b0 + (b1*p) + (b2*p*p))
+#y <- exp((-0.04569*p*p) + (2.47835*p) - 30.98196)
+
+plot(Eggs.Scale ~ AVEmaxTemp, data=data, xlab=expression(paste("Average of Daily Maximum Temperatures (" * degree, "C)")), ylab="Number of Eggs Laid per Day")
+lines(y~p, type="l", lty=1) #quadratic
+```
