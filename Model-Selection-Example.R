@@ -103,7 +103,10 @@ mod.32 = CH(mod.32)
 #all singular fits not converging properly, remove
 
 #model selection table
-model.sel(mod.1,	mod.2,	mod.3,	mod.4,	mod.5,	mod.6,	mod.7,	mod.8,	mod.9, mod.10,	mod.11, mod.12, mod.13, mod.14, mod.15, mod.16, mod.17, mod.18,	mod.19, mod.20,	mod.22, mod.23, mod.24, mod.25,	mod.26,	mod.27,	mod.28,	mod.29,	mod.30,	mod.31,	mod.32, mod.33, mod.34, mod.35, mod.36, mod.37, mod.38, mod.39, mod.40, mod.41, mod.42, mod.42, mod.43, mod.44)
+model.sel(mod.1,	mod.2,	mod.3,	mod.4,	mod.5,	mod.6,	mod.7,	mod.8,	mod.9, mod.10,	mod.11, mod.12, mod.13, mod.14, 
+          mod.15, mod.16, mod.17, mod.18,	mod.19, mod.20,	mod.22, mod.23, mod.24, mod.25,	mod.26,	mod.27,	mod.28,	mod.29,	
+          mod.30,	mod.31,	mod.32, mod.33, mod.34, mod.35, mod.36, mod.37, mod.38, mod.39, mod.40, mod.41, mod.42, mod.42, 
+          mod.43, mod.44)
 
 #HIGHEST RANKED MODEL
 mod.33 = glmer(formula = survariable ~ AVEmaxTemp + FP + (1 | Site/Plot), data = dfs, family = binomial(logit))
